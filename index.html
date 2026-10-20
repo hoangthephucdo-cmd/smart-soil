@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Hue-SmartSoil</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+:root{--bg:#f4f7f6;--panel:#fff;--ink:#16312d;--muted:#667a76;--line:#dfe8e5;--brand:#1c6b58;--brand2:#dff1ea;--warn:#fff6dc;--shadow:0 8px 28px rgba(21,58,50,.12)}
+*{box-sizing:border-box}html,body{height:100%;margin:0;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
+#app{height:100vh;display:grid;grid-template-rows:auto 1fr}.topbar{display:flex;align-items:center;gap:16px;padding:10px 16px;background:#fff;border-bottom:1px solid var(--line);z-index:1200}
+.brand{display:flex;align-items:center;gap:9px;min-width:max-content}.brandmark{width:42px;height:42px;border-radius:13px;background:#f5fbf7;display:grid;place-items:center;box-shadow:0 5px 14px rgba(28,107,88,.16);border:1px solid #d8eae3;overflow:hidden}.brandmark svg{display:block;width:40px;height:40px}
+.brand h1{font-size:17px;margin:0}.brand small{display:block;font-size:10px;color:var(--muted)}.tabs{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
+.tab{border:1px solid transparent;background:transparent;color:#556b66;padding:8px 11px;border-radius:10px;cursor:pointer;white-space:nowrap;font-size:12px;font-weight:700}.tab.active{background:var(--brand2);color:var(--brand);border-color:#bcded2}
+.top-actions{margin-left:auto;display:flex;gap:6px}.pill{font-size:9px;padding:5px 7px;background:#f1f5f4;border:1px solid var(--line);border-radius:999px;color:#5e736e}
+.workspace{min-height:0;display:grid;grid-template-columns:320px 1fr}.sidebar{background:#fff;border-right:1px solid var(--line);padding:14px;overflow:auto;z-index:900}
+.hero{background:linear-gradient(145deg,#f8fbfa,#eef7f3);border:1px solid #d9e9e3;border-radius:14px;padding:11px;margin-bottom:12px}.hero b{font-size:12px}.hero p{font-size:9.5px;line-height:1.45;color:#637672;margin:4px 0 0}
+.section{font-size:9.5px;font-weight:800;color:#7a8e89;text-transform:uppercase;letter-spacing:.7px;margin:7px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.choice{border:1px solid var(--line);background:#fff;border-radius:11px;padding:8px;cursor:pointer;text-align:left;color:#415952}.choice.active{border-color:#74b39f;background:#eaf6f1;color:#155d4c;box-shadow:inset 0 0 0 1px #bde1d4}
+.choice b{display:block;font-size:11px}.choice small{display:block;color:#74847f;font-size:8.5px;margin-top:2px}.note{margin-top:10px;padding:9px;border-radius:10px;background:#f7f9f8;border:1px solid var(--line);font-size:9px;line-height:1.45;color:#657873}.obs-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}.obs-stat{border:1px solid var(--line);border-radius:9px;padding:7px;background:#fbfdfc;text-align:center}.obs-stat span{display:block;font-size:7.5px;color:#7a8b87;text-transform:uppercase;letter-spacing:.4px}.obs-stat b{display:block;font-size:13px;margin-top:2px;color:#164a3d}.note.warn{background:var(--warn);border-color:#efddb1;color:#745f2b}
+.switchline{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px dashed #e7ecea;font-size:10.5px}.details{margin-top:12px;border-top:1px solid var(--line);padding-top:9px}details summary{font-size:10.5px;font-weight:700;cursor:pointer;color:#527168}
+.advanced{display:grid;gap:5px;margin-top:7px}.advanced button{font-size:9.5px;padding:7px;border:1px solid var(--line);background:#fff;border-radius:8px;text-align:left;cursor:pointer}
+.mapwrap{position:relative;min-width:0}#map{height:100%;width:100%;background:#e8eeec}.badge,.legend,.info{position:absolute;z-index:800;background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+.badge{left:50%;right:auto;top:14px;transform:translateX(-50%);padding:9px 11px;max-width:520px;width:max-content}.badge b{font-size:12px}.badge div{font-size:9.2px;color:#657a74;margin-top:3px}
+.legend{right:14px;bottom:18px;padding:10px 11px;min-width:205px}.lgtitle{font-size:10.5px;font-weight:750}.grad{height:10px;border-radius:6px;margin:6px 0 4px}.scale{display:flex;justify-content:space-between;font-size:8.5px;color:#6d807b}.lgnote{font-size:8px;color:#758580;line-height:1.35;margin-top:5px;max-width:230px}
+.info{left:14px;bottom:18px;width:340px;max-width:calc(100% - 28px);padding:11px;display:none}.info.show{display:block}.infohead{display:flex;justify-content:space-between}.infohead b{font-size:12px}.infohead small{display:block;font-size:8.5px;color:#71827e}.close{border:0;background:#edf3f1;border-radius:50%;width:27px;height:27px;cursor:pointer}.itag{display:inline-flex;margin-top:7px;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:700}.obs{background:#e1f4ea;color:#226c52}.pred{background:#e7effb;color:#315f9b}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}.metric{border:1px solid #e3ebe8;background:#fafcfb;border-radius:9px;padding:6px}.metric span{display:block;font-size:8px;color:#758782}.metric b{display:block;font-size:14px;margin-top:1px}.metric small{font-size:7px;color:#8a9995}
+@media(max-width:900px){#app{height:auto}.topbar{padding:8px 9px;gap:7px;flex-wrap:wrap}.tabs{order:3;width:100%}.top-actions{margin-left:0}.brand small{display:none}.workspace{display:flex;flex-direction:column}.sidebar{border-right:0;border-bottom:1px solid var(--line);padding:10px}.hero{display:none}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}.mapwrap{height:68vh;min-height:480px}.badge{left:50%;right:auto;top:58px;transform:translateX(-50%);max-width:calc(100% - 120px);width:max-content;padding:7px 9px}.legend{right:8px;bottom:8px;min-width:165px;padding:8px}.info{left:8px;bottom:8px;width:calc(100% - 16px)}}
+
+/* ===== Hue-SmartSoil Decision Support extension ===== */
+.ds-panel{display:grid;gap:8px;margin-top:8px}
+.ds-card{border:1px solid var(--line);border-radius:11px;padding:9px;background:#fbfdfc}
+.ds-card.high{border-color:#edb0a6;background:#fff3f1}
+.ds-card.med{border-color:#ead18c;background:#fff9e9}
+.ds-card.low{border-color:#bcded2;background:#f1faf6}
+.ds-card.infox{border-color:#c8d8e8;background:#f4f8fc}
+.ds-card b{font-size:10.5px;display:block;margin-bottom:3px}
+.ds-card p{font-size:9px;line-height:1.45;margin:0;color:#5f726d}
+.ds-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.ds-chip{font-size:8px;padding:4px 6px;border-radius:999px;border:1px solid #dce7e3;background:#fff}
+.ds-chip.red{background:#fff0ee;border-color:#efb3a9;color:#8a3429}
+.ds-chip.amber{background:#fff8e4;border-color:#ead18c;color:#795e1f}
+.ds-chip.green{background:#edf8f3;border-color:#b8dacd;color:#24614f}
+.ds-table{width:100%;border-collapse:collapse;font-size:8.7px;margin-top:6px}
+.ds-table td{padding:4px 3px;border-bottom:1px dashed #e3ebe8;vertical-align:top}
+.ds-table td:first-child{color:#72837e;width:44%}
+.ds-score{font-size:22px;font-weight:800;color:#164a3d}
+.ds-priority{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:8px}
+.ds-priority .choice{cursor:default}
+.ds-source{font-size:7.8px;line-height:1.4;color:#788984;margin-top:7px}
+.ds-help{font-size:8.5px;line-height:1.5;color:#637672}
+.metric.highlight{background:#f0f8f5;border-color:#bcded2}
+@media(max-width:900px){.ds-priority{grid-template-columns:1fr 1fr}}
+
+
+/* ===== Responsive info-card overflow fix ===== */
+.info{
+  max-height:calc(100% - 36px);
+  overflow-y:auto;
+  overflow-x:hidden;
+  overscroll-behavior:contain;
+  scrollbar-width:thin;
+}
+.infohead{
+  position:sticky;
+  top:-11px;
+  z-index:5;
+  background:rgba(255,255,255,.97);
+  padding-top:11px;
+  padding-bottom:6px;
+}
+.ds-card b,.ds-card p,.note,.metric,.ds-table td{
+  overflow-wrap:anywhere;
+  word-break:normal;
+}
+@media(max-width:900px){
+  .info{
+    left:8px;
+    right:8px;
+    bottom:8px;
+    width:auto;
+    max-width:none;
+    max-height:min(72vh,calc(100% - 16px));
+    padding:10px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .infohead{top:-10px;padding-top:10px}
+}
+@media(max-width:520px){
+  .metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ds-card{padding:10px}
+  .ds-card b{font-size:10px;line-height:1.35}
+  .ds-card p{font-size:8.8px;line-height:1.5}
+  .ds-table{font-size:8.5px}
+}
+
+
+/* ===== Leaflet control placement fix ===== */
+.leaflet-top.leaflet-right{
+  top:10px;
+  right:10px;
+}
+.leaflet-control-layers{
+  margin-top:0 !important;
+  margin-right:0 !important;
+}
+.leaflet-control-zoom{
+  margin-top:8px !important;
+  margin-right:0 !important;
+  float:none !important;
+}
+@media(max-width:900px){
+  .leaflet-top.leaflet-right{
+    top:8px;
+    right:8px;
+  }
+  .leaflet-control-zoom{
+    margin-top:7px !important;
+  }
+}
+
+</style><style id="hss-chat-style">
+#hss-chat-launch{position:fixed;right:18px;bottom:18px;z-index:2500;border:0;border-radius:28px;background:#1c6b58;color:white;padding:13px 17px;box-shadow:0 7px 22px #153a3280;font-weight:700;cursor:pointer;font-size:13px}
+#hss-chat{position:fixed;right:18px;bottom:75px;width:min(370px,calc(100vw - 24px));height:min(510px,calc(100dvh - 100px));z-index:2501;background:white;border:1px solid #dfe8e5;border-radius:16px;box-shadow:0 14px 45px #16312d44;display:none;flex-direction:column;overflow:hidden;font-family:Inter,system-ui,sans-serif}
+#hss-chat.open{display:flex}#hss-chat-header{background:#1c6b58;color:white;padding:13px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:13px}#hss-chat-header button{background:transparent;border:0;color:white;font-size:23px;cursor:pointer}#hss-chat-messages{flex:1;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:9px;background:#f7faf8} .hss-msg{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;line-height:1.5;padding:10px;border-radius:12px;max-width:92%}.hss-msg.bot{background:white;border:1px solid #dfe8e5;align-self:flex-start}.hss-msg.user{background:#dff1ea;align-self:flex-end}.hss-chat-suggest{padding:6px 10px;display:flex;gap:5px;flex-wrap:wrap}.hss-chat-suggest button{border:1px solid #bcded2;border-radius:15px;background:#f1faf6;padding:6px;font-size:10px;cursor:pointer}#hss-chat-form{display:flex;gap:6px;padding:9px;border-top:1px solid #dfe8e5}#hss-chat-input{min-width:0;flex:1;border:1px solid #dfe8e5;border-radius:9px;padding:9px;font-size:12px}#hss-chat-form button{border:0;background:#1c6b58;color:white;border-radius:9px;padding:8px 12px;cursor:pointer}#hss-chat-foot{padding:0 11px 8px;color:#667a76;font-size:9px}@media(max-width:520px){#hss-chat-launch{right:10px;bottom:10px}#hss-chat{right:8px;bottom:65px;width:calc(100vw - 16px);height:min(480px,calc(100dvh - 85px))}}
+</style></head>
+<body><div id="app">
+<header class="topbar"><div class="brand"><div class="brandmark logo-wrap" aria-label="Hue-SmartSoil logo">
+<svg viewBox="0 0 64 64" width="38" height="38" role="img" aria-hidden="true">
+  <defs>
+    <linearGradient id="leafG" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#2f8f6d"/>
+      <stop offset="100%" stop-color="#79b88e"/>
+    </linearGradient>
+    <linearGradient id="soilG" x1="0" x2="1">
+      <stop offset="0%" stop-color="#9b6a45"/>
+      <stop offset="100%" stop-color="#6f4b35"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="30" fill="#f4fbf7"/>
+  <path d="M13 43 C22 38,42 38,51 43 L49 50 C39 53,25 53,15 50 Z" fill="url(#soilG)"/>
+  <path d="M31 42 C31 32,31 25,32 18" fill="none" stroke="#245c49" stroke-width="3.3" stroke-linecap="round"/>
+  <path d="M31 26 C21 26,17 20,17 13 C25 13,31 17,31 26 Z" fill="url(#leafG)"/>
+  <path d="M33 23 C43 23,48 17,48 10 C40 10,34 14,33 23 Z" fill="#57a777"/>
+</svg>
+</div><div><h1>Hue-SmartSoil</h1><small>Huế · Vietnam</small></div></div>
+<nav class="tabs">
+<button class="tab active" data-tab="observed">● Đo thực địa</button>
+<button class="tab" data-tab="predicted">▦ Dự đoán 100 m</button>
+<button class="tab" data-tab="change">↕ Biến động 2025→2026</button>
+<button class="tab" data-tab="forecast">◌ Kịch bản 2027</button>
+<button class="tab" data-tab="decision">⚙ Hỗ trợ canh tác</button>
+</nav><div class="top-actions"><span class="pill">80 field</span><span class="pill">2026 · DSS v10</span></div></header>
+<main class="workspace"><aside class="sidebar">
+<div id="observedPanel">
+<div class="hero"><b>Giá trị đo thực địa tại 80 field</b><p>Mỗi điểm là một vị trí lấy mẫu thực tế. Click vào điểm để xem đồng thời toàn bộ chỉ tiêu đất đã đo.</p></div>
+<div class="section">Quan trắc thực địa</div>
+<div class="note"><b>Click trực tiếp vào một điểm trên bản đồ để xem:</b><br>
+pH · N dễ tiêu · N tổng số · P/K dễ tiêu · P/K tổng số · SOM/OM · CEC · dung trọng · texture.<br><br>
+<b>Chế độ:</b> Quan trắc
+</div>
+<!-- Giữ các phần tử ẩn để không thay đổi logic JS của các tab khác -->
+<div id="obsBtns" style="display:none"></div>
+<div style="display:none">
+  <button data-obsmode="surface"></button>
+  <button data-obsmode="points"></button>
+  <span id="obsMin">—</span><span id="obsMedian">—</span><span id="obsMax">—</span>
+</div>
+</div>
+<div id="predictedPanel" style="display:none"><div class="hero"><b>Bản đồ dự đoán 100 m</b><p>Mỗi pixel là giá trị mô hình ước tính từ các biến môi trường — không phải phép đo trực tiếp.</p></div><div class="section">Chỉ tiêu</div><div id="predBtns" class="grid three"></div><div class="section" style="margin-top:13px">Loại lớp</div><div class="grid"><button class="choice active" data-ptype="prediction"><b>Dự đoán</b><small>giá trị ước tính</small></button><button class="choice" data-ptype="uncertainty"><b>Bất định</b><small>SD_pred</small></button></div><div id="modelNote" class="note warn"></div>
+<div class="note" style="margin-top:8px"><b>Mô hình mở rộng đã benchmark:</b><br>
+N dễ tiêu có tín hiệu mạnh trong vùng đã lấy mẫu nhưng LORO rất yếu; K tổng số, CEC và P tổng số là ứng viên tiếp theo. Chưa hiển thị raster của các biến này cho tới khi hoàn thiện lớp dự báo không gian và kiểm định production.</div>
+</div>
+<div id="changePanel" style="display:none"><div class="hero"><b>Biến động 2025→2026</b><p>Δ = 2026 − 2025. Các bề mặt thể hiện xu hướng không gian từ 80 field lặp lại.</p></div><div class="section">Chỉ tiêu</div><div id="changeBtns" class="grid"></div></div>
+<div id="forecastPanel" style="display:none"><div class="hero"><b>Kịch bản 2027 · thử nghiệm</b><p>Scenario projection, chưa phải forecast đã được kiểm định bằng dữ liệu 2027.</p></div><div class="section">Chỉ tiêu</div><div id="fpropBtns" class="grid three"></div><div class="section" style="margin-top:13px">Kịch bản</div><div id="fscenarioBtns" class="grid"></div><div class="note warn">Không diễn giải các lớp 2027 như giá trị chắc chắn trong tương lai.</div></div>
+<div id="decisionPanel" style="display:none">
+  <div class="hero"><b>Hỗ trợ quyết định canh tác</b>
+    <p>Chuyển dữ liệu đất thành mức ưu tiên quản lý. Đây là khuyến nghị sàng lọc, không thay thế xét nghiệm đất và tư vấn nông học tại ruộng.</p>
+  </div>
+  <div class="section">Chế độ khuyến nghị</div>
+  <div class="grid" id="dsModeBtns">
+    <button class="choice active" data-dsmode="overall"><b>Tổng hợp</b><small>ưu tiên chính</small></button>
+    <button class="choice" data-dsmode="acid"><b>Độ chua</b><small>pH · vôi</small></button>
+    <button class="choice" data-dsmode="nutrient"><b>Dinh dưỡng</b><small>N · P · K</small></button>
+    <button class="choice" data-dsmode="soil"><b>Nền đất</b><small>OM · CEC</small></button>
+  </div>
+  <div class="section" style="margin-top:13px">Cách dùng</div>
+  <div class="note">
+    <b>Click một field màu trên bản đồ.</b><br>
+    Hệ thống sẽ đọc pH, N/P/K, OM, CEC, texture, địa hình và dữ liệu quản lý hiện có để đưa ra thứ tự ưu tiên.
+  </div>
+  <div class="note warn">
+    <b>Safety gate:</b> không đưa ra liều phân/vôi bắt buộc. Các liều tham khảo ngoài vùng không được áp dụng máy móc cho Huế.
+  </div>
+  <div class="section" style="margin-top:13px">Mức ưu tiên</div>
+  <div class="ds-priority">
+    <button class="choice"><b style="color:#9b3f32">Cao</b><small>cần xem xét sớm</small></button>
+    <button class="choice"><b style="color:#8a6b1f">Trung bình</b><small>theo dõi/điều chỉnh</small></button>
+    <button class="choice"><b style="color:#24614f">Thấp</b><small>chưa phải ưu tiên</small></button>
+    <button class="choice"><b style="color:#315f9b">Xác minh</b><small>cần thêm dữ liệu</small></button>
+  </div>
+  <div class="ds-source">
+    Quy tắc độ chua tham chiếu hướng dẫn canh tác lúa của Trung tâm Khuyến nông Quốc gia; P/K/N được dùng thận trọng, kết hợp phân bố nội bộ 80 field và dữ liệu quản lý hiện có.
+  </div>
+</div>
+
+<div class="details"><div class="section">Hiển thị</div><div class="switchline"><span>Ranh giới hành chính</span><input id="adminToggle" type="checkbox" checked></div><div class="switchline"><span>Điểm lấy mẫu</span><input id="pointsToggle" type="checkbox" checked></div><div class="switchline" id="opacityLine" style="display:none"><span>Độ trong suốt</span><span id="opacityText">82%</span></div><input id="opacity" style="display:none;width:100%" type="range" min=".25" max="1" step=".05" value=".82"><details><summary>Dữ liệu hỗ trợ & kỹ thuật</summary><div id="advanced" class="advanced"></div></details></div>
+</aside>
+<section class="mapwrap"><div id="map"></div><div class="badge"><b id="mapTitle">Đo thực địa 2026</b><div id="mapSubtitle">80 vị trí quan trắc · click vào điểm để xem số liệu đo</div></div>
+<div class="legend"><div id="legendTitle" class="lgtitle"></div><div id="legendGrad" class="grad"></div><div class="scale"><span id="legendMin"></span><span id="legendMax"></span></div><div id="legendNote" class="lgnote"></div></div>
+<div id="info" class="info"><div class="infohead"><div><b id="infoTitle">Thông tin</b><small id="infoCoords"></small></div><button id="closeInfo" class="close">×</button></div><div id="infoTag" class="itag"></div>
+<div class="metrics"><div class="metric"><span>pH</span><b id="mPH">—</b></div><div class="metric"><span>K dễ tiêu</span><b id="mK">—</b><small>mg/100 g</small></div><div class="metric"><span>P dễ tiêu</span><b id="mP">—</b><small>mg/100 g</small></div><div class="metric"><span>SOM/OM</span><b id="mSOM">—</b><small>%</small></div><div class="metric"><span>CEC</span><b id="mCEC">—</b><small>cmol(+)/kg</small></div><div class="metric"><span id="extraLabel">Bất định</span><b id="mExtra">—</b><small id="extraUnit">SD_pred</small></div></div>
+<div class="section" style="margin-top:10px">Vị trí & địa hình</div>
+<div class="metrics">
+  <div class="metric"><span>Latitude</span><b id="mLat">—</b><small>WGS84</small></div>
+  <div class="metric"><span>Longitude</span><b id="mLon">—</b><small>WGS84</small></div>
+  <div class="metric"><span>Độ cao</span><b id="mElev">—</b><small>m</small></div>
+  <div class="metric"><span>Độ dốc</span><b id="mSlope">—</b><small>degree</small></div>
+  <div class="metric"><span>TWI</span><b id="mTWI">—</b></div>
+  <div class="metric"><span>Khoảng cách tới mẫu</span><b id="mDist">—</b><small>km</small></div>
+</div>
+<div id="infoNote" class="lgnote" style="margin-top:7px"></div>
+<div id="extendedMeasured" style="display:none">
+  <div class="section" style="margin-top:10px">Dinh dưỡng & tính chất mở rộng</div>
+  <table class="ds-table">
+    <tr><td>N dễ tiêu</td><td><b id="mNavail">—</b> mg/100 g</td></tr>
+    <tr><td>N tổng số</td><td><b id="mNtotal">—</b> %</td></tr>
+    <tr><td>P₂O₅ tổng số</td><td><b id="mPtotal">—</b> %</td></tr>
+    <tr><td>K₂O tổng số</td><td><b id="mKtotal">—</b> %</td></tr>
+    <tr><td>Dung trọng</td><td><b id="mBulk">—</b> g/cm³</td></tr>
+    <tr><td>Texture</td><td><b id="mTexture">—</b></td></tr>
+  </table>
+  <div class="section" style="margin-top:10px">Quản lý hiện tại</div>
+  <table class="ds-table">
+    <tr><td>Urê</td><td><b id="mUrea">—</b> kg/ha</td></tr>
+    <tr><td>NPK 16-16-8</td><td><b id="mNPK">—</b> kg/ha</td></tr>
+    <tr><td>KCl</td><td><b id="mKCl">—</b> kg/ha</td></tr>
+    <tr><td>Vôi báo cáo</td><td><b id="mLime">—</b> kg/ha</td></tr>
+    <tr><td>Hữu cơ</td><td><b id="mOrganic">—</b></td></tr>
+    <tr><td>Năng suất TB</td><td><b id="mYield">—</b> t/ha</td></tr>
+  </table>
+</div>
+<div id="decisionBox" style="display:none">
+  <div class="section" style="margin-top:10px">Khuyến nghị quản lý</div>
+  <div id="decisionCards" class="ds-panel"></div>
+  <div id="decisionSafety" class="note warn" style="margin-top:7px"></div>
+</div>
+</div>
+</section></main></div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="assets/layers_01.js"></script>
+<script src="assets/layers_02.js"></script>
+<script src="assets/layers_03.js"></script>
+<script src="assets/layers_04.js"></script>
+<script src="assets/layers_05.js"></script>
+<script src="assets/layers_06.js"></script>
+<script src="assets/layers_07.js"></script>
+<script src="assets/layers_08.js"></script>
+<script src="assets/layers_09.js"></script>
+<script src="assets/layers_10.js"></script>
+<script src="assets/layers_11.js"></script>
+<script src="assets/layers_12.js"></script>
+<script src="assets/layers_13.js"></script>
+<script src="assets/layers_14.js"></script>
+<script src="assets/layers_15.js"></script>
+<script src="assets/layers_16.js"></script>
+<script src="assets/layers_17.js"></script>
+<script src="assets/layers_18.js"></script>
+<script src="assets/layers_19.js"></script>
+<script src="assets/layers_20.js"></script>
+<script src="assets/layers_21.js"></script>
+<script src="assets/layers_22.js"></script>
+<script src="assets/layers_23.js"></script>
+<script src="assets/layers_24.js"></script>
+<script src="assets/layers_25.js"></script>
+<script src="assets/layers_26.js"></script>
+<script src="assets/layers_27.js"></script>
+<script src="assets/layers_28.js"></script>
+<script src="assets/techNumeric_01.js"></script>
+<script src="assets/techNumeric_02.js"></script>
+<script src="assets/techNumeric_03.js"></script>
+<script src="assets/techNumeric_04.js"></script>
+<script src="assets/adminGeo.js"></script>
+<script src="assets/observedGeo.js"></script>
+<script>window.HSS_soilNumeric={};</script>
+<script src="assets/soilNumeric_03.js"></script>
+<script src="assets/soilNumeric_04.js"></script>
+<script src="assets/soilNumeric_05.js"></script>
+<script>window.HSS_uncNumeric={};</script>
+<script src="assets/uncNumeric_07.js"></script>
+<script src="assets/uncNumeric_08.js"></script>
+<script src="assets/uncNumeric_09.js"></script>
+<script>
+const layers=window.HSS_layers,adminGeo=window.HSS_adminGeo,observedGeo=window.HSS_observedGeo,imageBounds=[[16.166657570592434, 107.10907856238998], [16.690385694524462, 107.80151101624928]],soilNumeric=window.HSS_soilNumeric,uncNumeric=window.HSS_uncNumeric;
+const techNumeric=window.HSS_techNumeric;
+const observedSurfaces={"pH": {"datauri": "assets/map_layer_26.png", "vmin": 4.483675003051758, "vmax": 5.405575275421143, "cmap": "viridis", "unit": "pH", "title": "pH · nội suy trong vùng có điểm mẫu", "note": "Chỉ hiển thị trong các boundary hành chính có ít nhất một field lấy mẫu. Bề mặt là IDW từ dữ liệu quan trắc, không phải phép đo tại mọi pixel."}, "K": {"datauri": "assets/map_layer_27.png", "vmin": 5.973197937011719, "vmax": 10.52962875366211, "cmap": "plasma", "unit": "mg/100 g", "title": "K · nội suy trong vùng có điểm mẫu", "note": "Chỉ hiển thị trong các boundary hành chính có ít nhất một field lấy mẫu. Bề mặt là IDW từ dữ liệu quan trắc, không phải phép đo tại mọi pixel."}, "P": {"datauri": "assets/map_layer_28.png", "vmin": 6.129469871520996, "vmax": 10.410179138183594, "cmap": "magma", "unit": "mg/100 g", "title": "P · nội suy trong vùng có điểm mẫu", "note": "Chỉ hiển thị trong các boundary hành chính có ít nhất một field lấy mẫu. Bề mặt là IDW từ dữ liệu quan trắc, không phải phép đo tại mọi pixel."}, "SOM": {"datauri": "assets/map_layer_29.png", "vmin": 2.166325092315674, "vmax": 3.5645766258239746, "cmap": "YlGn", "unit": "%", "title": "SOM · nội suy trong vùng có điểm mẫu", "note": "Chỉ hiển thị trong các boundary hành chính có ít nhất một field lấy mẫu. Bề mặt là IDW từ dữ liệu quan trắc, không phải phép đo tại mọi pixel."}, "CEC": {"datauri": "assets/map_layer_30.png", "vmin": 4.976916790008545, "vmax": 9.566898345947266, "cmap": "YlOrRd", "unit": "cmol(+)/kg", "title": "CEC · nội suy trong vùng có điểm mẫu", "note": "Chỉ hiển thị trong các boundary hành chính có ít nhất một field lấy mẫu. Bề mặt là IDW từ dữ liệu quan trắc, không phải phép đo tại mọi pixel."}};
+const street=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'});
+const satellite=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'Esri'});
+const map=L.map('map',{layers:[street],zoomControl:false}).fitBounds(imageBounds);L.control.layers({'Bản đồ đường phố':street,'Ảnh vệ tinh':satellite}).addTo(map);
+
+
+// Move zoom control to the upper-right so it does not cover the information panel.
+L.control.zoom({position:'topright'}).addTo(map);
+const adminLayer=L.geoJSON(adminGeo,{style:{color:'#244b42',weight:1.2,fill:false,opacity:.8}}).addTo(map);
+let tab='observed',obsProp='pH',obsMode='points',predProp='pH',ptype='prediction',change='ΔpH',fprop='pH',fscenario='CoSo',raster=null,points=null,advancedLayer=null;
+const ometa={pH:['pH','pH'],K:['K','mg/100 g'],P:['P','mg/100 g'],SOM:['SOM','%'],CEC:['CEC','cmol(+)/kg']};
+const notes={pH:'pH: Linear Regression · Elevation + Slope + HAND + Sand + Clay · GroupKFold R²=0.706 · Temporal R²=0.772.',K:'K: Random Forest · Elevation + Rain30 + RH30 · GroupKFold R²=0.419 · Temporal R²=0.137.',P:'P: lớp thăm dò · Temporal validation còn yếu; không diễn giải ngang hàng với pH.'};
+const grads={viridis:'linear-gradient(90deg,#440154,#3b528b,#21918c,#5ec962,#fde725)',plasma:'linear-gradient(90deg,#0d0887,#7e03a8,#cc4778,#f89540,#f0f921)',magma:'linear-gradient(90deg,#000004,#51127c,#b73779,#fc8961,#fcfdbf)',YlOrRd:'linear-gradient(90deg,#ffffcc,#fed976,#fd8d3c,#e31a1c,#800026)',div:'linear-gradient(90deg,#2166ac,#67a9cf,#f7f7f7,#ef8a62,#b2182b)',YlGn:'linear-gradient(90deg,#ffffe5,#d9f0a3,#78c679,#31a354,#006837)'};
+const obsMinEl=document.getElementById('obsMin'),
+      obsMedianEl=document.getElementById('obsMedian'),
+      obsMaxEl=document.getElementById('obsMax');
+const fmt=(v,d=2)=>v===null||v===undefined||!Number.isFinite(Number(v))?'—':Number(v).toFixed(d);
+function clearMap(){if(raster){map.removeLayer(raster);raster=null}if(advancedLayer){map.removeLayer(advancedLayer);advancedLayer=null}}
+function observedRange(p){const v=observedGeo.features.map(f=>f.properties[p]).filter(Number.isFinite);return[Math.min(...v),Math.max(...v)]}
+const obsPalettes={
+pH:['#440154','#3b528b','#21918c','#5ec962','#fde725'],
+K:['#0d0887','#7e03a8','#cc4778','#f89540','#f0f921'],
+P:['#000004','#51127c','#b73779','#fc8961','#fcfdbf'],
+SOM:['#ffffe5','#d9f0a3','#78c679','#31a354','#006837'],
+CEC:['#ffffcc','#fed976','#fd8d3c','#e31a1c','#800026']
+};
+function hexToRgb(h){h=h.replace('#','');return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]}
+function interpHex(a,b,t){const A=hexToRgb(a),B=hexToRgb(b);return `rgb(${Math.round(A[0]+(B[0]-A[0])*t)},${Math.round(A[1]+(B[1]-A[1])*t)},${Math.round(A[2]+(B[2]-A[2])*t)})`}
+function pointColor(prop,t){
+  t=Math.max(0,Math.min(1,t));
+  const pal=obsPalettes[prop]||obsPalettes.pH;
+  const p=t*(pal.length-1),i=Math.min(pal.length-2,Math.floor(p)),f=p-i;
+  return interpHex(pal[i],pal[i+1],f);
+}
+function showObserved(){
+  clearMap();
+  if(points){map.removeLayer(points);points=null;}
+
+  const vals=observedGeo.features
+    .map(f=>Number(f.properties[obsProp]))
+    .filter(v=>Number.isFinite(v));
+  if(!vals.length)return;
+
+  const sorted=[...vals].sort((a,b)=>a-b);
+  const mn=sorted[0], mx=sorted[sorted.length-1];
+  const med=sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2;
+  obsMinEl.textContent=fmt(mn);obsMedianEl.textContent=fmt(med);obsMaxEl.textContent=fmt(mx);
+
+  // always keep original sample points available
+  const makePoints=()=>L.geoJSON(observedGeo,{
+    pointToLayer:(f,ll)=>{
+      const v=Number(f.properties[obsProp]);
+      const t=(v-mn)/(mx-mn||1);
+      return L.circleMarker(ll,{
+        radius:obsMode==='surface'?4.6:9.5,
+        color:'#ffffff',weight:obsMode==='surface'?1.1:2.5,
+        fillColor:obsMode==='points'?'#1c6b58':pointColor(obsProp,t),fillOpacity:.98,
+        bubblingMouseEvents:false
+      });
+    },
+    onEachFeature:(f,l)=>{
+      const v=f.properties[obsProp];
+      l.bindTooltip(`<b>${f.properties.field_id}</b><br>Click để xem pH · K · P · SOM/OM · CEC`,{direction:'top',sticky:true});
+      l.on('click',(e)=>{
+        // Marker click must not continue to the generic map-click handler,
+        // otherwise the measured values are immediately overwritten by “—”.
+        if(e && e.originalEvent){L.DomEvent.stopPropagation(e.originalEvent);}
+        obsInfo(f);
+      });
+    }
+  });
+
+  if(obsMode==='surface'){
+    const s=observedSurfaces[obsProp];
+    raster=L.imageOverlay(s.datauri,imageBounds,{opacity:+opacity.value}).addTo(map);
+    points=makePoints().addTo(map);points.bringToFront();
+    title(`Quan trắc 2026 · ${obsProp} · bề mặt nội suy`,'IDW chỉ trong boundary hành chính có điểm mẫu; các điểm tròn là vị trí đo thực tế');
+    legendTitle.textContent=`${obsProp} · nội suy từ quan trắc`;
+    legendGrad.style.background=grads[s.cmap]||grads.viridis;
+    legendMin.textContent=fmt(s.vmin);legendMax.textContent=fmt(s.vmax);
+    legendNote.textContent='Chỉ các boundary có field được tô màu. Phần màu là nội suy từ quan trắc, không phải phép đo tại mọi pixel.';
+    opacityUI(true);
+  }else{
+    points=makePoints().addTo(map);points.bringToFront();
+    title('Đo thực địa 2026 · Quan trắc','Click vào một điểm để xem đồng thời pH, K dễ tiêu, P dễ tiêu, SOM/OM và CEC');
+    legendTitle.textContent='Điểm quan trắc thực địa';
+    legendGrad.style.background='#1c6b58';
+    legendMin.textContent='80 field';
+    legendMax.textContent='Quan trắc';
+    legendNote.textContent='Mỗi điểm là một vị trí lấy mẫu thực tế. Click điểm để xem đầy đủ các chỉ tiêu đo tại field.';
+    opacityUI(false);
+  }
+  pointsToggle.checked=true;
+}
+function showRaster(k){clearMap();if(points){map.removeLayer(points);points=null}raster=L.imageOverlay(layers[k].datauri,imageBounds,{opacity:+opacity.value}).addTo(map);legendLayer(k);opacityUI(true)}
+function showPred(){const k=ptype==='prediction'?predProp:predProp+'_unc';showRaster(k);title(ptype==='prediction'?`Dự đoán 100 m · ${predProp}`:`Bất định mô hình · ${predProp}`,ptype==='prediction'?'Mỗi pixel là giá trị mô hình ước tính — không phải phép đo trực tiếp':'SD_pred từ 5 mô hình GroupKFold');modelNote.textContent=notes[predProp]}
+function showChange(){showRaster(change);title(layers[change].title,'Δ = 2026 − 2025 · xu hướng không gian từ các field lặp lại')}
+function fkey(){return fprop==='pH'&&fscenario==='SD_CoSo'?'pH2027_SD_CoSo':`${fprop}2027_${fscenario}`}
+function showForecast(){const k=fkey();showRaster(k);title(layers[k].title,'Kịch bản thử nghiệm · chưa được kiểm định bằng dữ liệu 2027')}
+function title(a,b){mapTitle.textContent=a;mapSubtitle.textContent=b}
+function opacityUI(on){opacityLine.style.display=on?'flex':'none';opacity.style.display=on?'block':'none'}
+function legendObserved(mn,mx){
+  legendTitle.textContent=`${obsProp} · giá trị đo`;
+  const p=obsPalettes[obsProp]||obsPalettes.pH;
+  legendGrad.style.background=`linear-gradient(90deg,${p.join(',')})`;
+  legendMin.textContent=fmt(mn);legendMax.textContent=fmt(mx);
+  legendNote.textContent=`Đơn vị: ${ometa[obsProp][1]}. Từ trái → phải: thấp → cao. Màu chỉ áp dụng cho 80 điểm đã đo.`;
+}
+function legendLayer(k){const l=layers[k];legendTitle.textContent=l.title;legendGrad.style.background=grads[l.cmap]||grads.viridis;legendMin.textContent=fmt(l.vmin);legendMax.textContent=fmt(l.vmax);legendNote.textContent=l.note||''}
+function obsInfo(f){const p=f.properties;const lon=f.geometry.coordinates[0],lat=f.geometry.coordinates[1];fillLocationTerrain(lat,lon);infoTitle.textContent=`Field ${p.field_id} · ${p.region}`;infoCoords.textContent=p.sampling_date||'2026';infoTag.textContent='● Giá trị đo thực địa';infoTag.className='itag obs';mPH.textContent=fmt(p.pH);mK.textContent=fmt(p.K);mP.textContent=fmt(p.P);mSOM.textContent=fmt(p.SOM);mCEC.textContent=fmt(p.CEC);extraLabel.textContent='Field';mExtra.textContent=p.field_id;extraUnit.textContent='ID';infoNote.textContent='Các số đất là kết quả đo tại field. Phần Vị trí & địa hình được truy xuất từ các lớp raster hỗ trợ tại pixel chứa field.';info.classList.add('show')}
+function decode(meta){if(meta._a)return meta._a;const b=atob(meta.b64),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);meta._a=new Int16Array(u.buffer);return meta._a}
+function sample(meta,r,c){if(!meta||r<0||c<0||r>=meta.h||c>=meta.w)return null;const q=decode(meta)[r*meta.w+c];return q===meta.nodata?null:meta.offset+q*meta.scale}
+function utm(lon,lat){const a=6378137,e2=.00669438,k=.9996,l0=105*Math.PI/180,p=lat*Math.PI/180,l=lon*Math.PI/180,ep=e2/(1-e2),N=a/Math.sqrt(1-e2*Math.sin(p)**2),T=Math.tan(p)**2,C=ep*Math.cos(p)**2,A=Math.cos(p)*(l-l0),M=a*((1-e2/4-3*e2**2/64-5*e2**3/256)*p-(3*e2/8+3*e2**2/32+45*e2**3/1024)*Math.sin(2*p)+(15*e2**2/256+45*e2**3/1024)*Math.sin(4*p)-(35*e2**3/3072)*Math.sin(6*p));return[k*N*(A+(1-T+C)*A**3/6+(5-18*T+T*T+72*C-58*ep)*A**5/120)+500000,k*(M+N*Math.tan(p)*(A*A/2+(5-T+9*C+4*C*C)*A**4/24+(61-58*T+T*T+600*C-330*ep)*A**6/720))]}
+function rc(lat,lon){const[e,n]=utm(lon,lat),g=soilNumeric.grid;return[Math.floor((g.ymax-n)/g.res),Math.floor((e-g.xmin)/g.res)]}
+function predVals(lat,lon){const[r,c]=rc(lat,lon);return{pH:sample(soilNumeric.current.pH,r,c),K:sample(soilNumeric.current.K,r,c),P:sample(soilNumeric.current.P,r,c),pHsd:sample(uncNumeric.pH,r,c),Ksd:sample(uncNumeric.K,r,c),Psd:sample(uncNumeric.P,r,c)}}
+
+function technicalValues(lat,lon){
+  const [r,c]=rc(lat,lon);
+  return {
+    elev:sample(techNumeric.Elevation,r,c),
+    slope:sample(techNumeric.Slope,r,c),
+    twi:sample(techNumeric.TWI,r,c),
+    dist:sample(techNumeric.Distance,r,c)
+  };
+}
+function fillLocationTerrain(lat,lon){
+  const t=technicalValues(lat,lon);
+  mLat.textContent=Number(lat).toFixed(6);
+  mLon.textContent=Number(lon).toFixed(6);
+  mElev.textContent=fmt(t.elev,1);
+  mSlope.textContent=fmt(t.slope,2);
+  mTWI.textContent=fmt(t.twi,2);
+  mDist.textContent=fmt(t.dist,2);
+}
+map.on('click',e=>{if(tab!=='predicted')return;fillLocationTerrain(e.latlng.lat,e.latlng.lng);const v=predVals(e.latlng.lat,e.latlng.lng);infoTitle.textContent='Pixel dự đoán 100 m';infoCoords.textContent=`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;infoTag.textContent='▦ Giá trị từ predictive raster';infoTag.className='itag pred';mPH.textContent=fmt(v.pH);mK.textContent=fmt(v.K);mP.textContent=fmt(v.P);mSOM.textContent='—';mCEC.textContent='—';extraLabel.textContent=`SD_pred ${predProp}`;mExtra.textContent=fmt(v[predProp+'sd'],3);extraUnit.textContent='model stability';infoNote.textContent='pH/K/P là dự đoán mô hình. SOM và CEC được để trống ở vùng chưa lấy mẫu vì chưa có final predictive model tương ứng.';info.classList.add('show')});
+
+map.on('click',e=>{
+  if(tab==='predicted')return;
+
+  // OBSERVED MODE:
+  // If the click is on/very near a sampling point, always show the measured field data.
+  // This is handled here at map level so marker/map event bubbling cannot overwrite pH/K/P/SOM/CEC.
+  if(tab==='observed'){
+    const clickPt=map.latLngToContainerPoint(e.latlng);
+    let nearest=null,nearestPx=Infinity;
+    observedGeo.features.forEach(f=>{
+      const c=f.geometry.coordinates;
+      const fp=map.latLngToContainerPoint([c[1],c[0]]);
+      const d=clickPt.distanceTo(fp);
+      if(d<nearestPx){nearestPx=d;nearest=f;}
+    });
+    if(nearest && nearestPx<=18){
+      obsInfo(nearest);
+      return;
+    }
+  }
+
+  fillLocationTerrain(e.latlng.lat,e.latlng.lng);
+  infoTitle.textContent='Thông tin vị trí trên bản đồ';
+  infoCoords.textContent=`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+  infoTag.textContent='⌖ Vị trí & dữ liệu địa hình';
+  infoTag.className='itag pred';
+  mPH.textContent='—';mK.textContent='—';mP.textContent='—';mSOM.textContent='—';mCEC.textContent='—';
+  extraLabel.textContent='Chế độ';mExtra.textContent=tab==='observed'?'Quan trắc':tab==='change'?'Biến động':'2027';extraUnit.textContent='';
+  infoNote.textContent=tab==='observed'
+    ?'Bạn đang click ngoài điểm lấy mẫu. Hãy click trực tiếp vào một điểm quan trắc màu xanh để xem pH, K, P, SOM/OM và CEC đã đo.'
+    :'Độ cao, độ dốc, TWI và khoảng cách tới điểm mẫu được lấy từ các lớp dữ liệu hỗ trợ tại pixel 100 m chứa vị trí click.';
+  info.classList.add('show');
+});
+closeInfo.onclick=()=>info.classList.remove('show');
+function rebuild(){
+  obsBtns.innerHTML='';
+  ['pH','K','P','SOM','CEC'].forEach(k=>{
+    const b=document.createElement('button');
+    b.className='choice'+(k===obsProp?' active':'');
+    b.dataset.observedProperty=k;
+    b.innerHTML=`<b>${k}</b><small>${ometa[k][1]}</small>`;
+    b.addEventListener('click',()=>{
+      obsProp=k;
+      document.querySelectorAll('[data-observed-property]').forEach(x=>{
+        x.classList.toggle('active',x.dataset.observedProperty===obsProp);
+      });
+      showObserved();
+    });
+    obsBtns.appendChild(b);
+  });
+  predBtns.innerHTML='';['pH','K','P'].forEach(k=>{const b=document.createElement('button');b.className='choice'+(k===predProp?' active':'');b.innerHTML=`<b>${k}</b><small>${k==='pH'?'Mạnh nhất':k==='K'?'Thứ cấp':'Thăm dò'}</small>`;b.onclick=()=>{predProp=k;rebuild();showPred()};predBtns.appendChild(b)});
+  changeBtns.innerHTML='';['ΔpH','ΔK','ΔP','ΔSOM','ΔCEC'].forEach(k=>{const b=document.createElement('button');b.className='choice'+(k===change?' active':'');b.innerHTML=`<b>${k}</b><small>2025→2026</small>`;b.onclick=()=>{change=k;rebuild();showChange()};changeBtns.appendChild(b)});
+  fpropBtns.innerHTML='';['pH','K','P'].forEach(k=>{const b=document.createElement('button');b.className='choice'+(k===fprop?' active':'');b.innerHTML=`<b>${k}</b><small>2027</small>`;b.onclick=()=>{fprop=k;if(fscenario==='SD_CoSo'&&k!=='pH')fscenario='CoSo';rebuild();showForecast()};fpropBtns.appendChild(b)});
+  fscenarioBtns.innerHTML='';let sc=[['CoSo','Cơ sở'],['KhoHon','Khô hơn'],['AmHon','Ẩm hơn']];if(fprop==='pH')sc.push(['SD_CoSo','Bất định']);sc.forEach(([k,l])=>{const b=document.createElement('button');b.className='choice'+(k===fscenario?' active':'');b.innerHTML=`<b>${l}</b>`;b.onclick=()=>{fscenario=k;rebuild();showForecast()};fscenarioBtns.appendChild(b)});
+  document.getElementById('advanced').innerHTML='';const labs={Elevation:'Độ cao',Slope:'Độ dốc',TWI:'TWI',Distance:'Khoảng cách tới mẫu',pH_support:'Miền hỗ trợ pH',K_support:'Miền hỗ trợ K',P_support:'Miền hỗ trợ P'};for(const k in labs){const b=document.createElement('button');b.textContent=labs[k];b.onclick=()=>{if(points){map.removeLayer(points);points=null}clearMap();advancedLayer=L.imageOverlay(layers[k].datauri,imageBounds,{opacity:+opacity.value}).addTo(map);legendLayer(k);title(layers[k].title,'Lớp hỗ trợ kỹ thuật')};document.getElementById('advanced').appendChild(b)}
+}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));observedPanel.style.display=tab==='observed'?'block':'none';predictedPanel.style.display=tab==='predicted'?'block':'none';changePanel.style.display=tab==='change'?'block':'none';forecastPanel.style.display=tab==='forecast'?'block':'none';decisionPanel.style.display=tab==='decision'?'block':'none';info.classList.remove('show');if(tab==='observed'){showObserved();setTimeout(()=>map.invalidateSize(),50);}if(tab==='predicted')showPred();if(tab==='change')showChange();if(tab==='forecast')showForecast();if(tab==='decision')showDecisionSupport()});
+
+document.querySelectorAll('[data-obsmode]').forEach(b=>b.onclick=()=>{
+  obsMode=b.dataset.obsmode;
+  document.querySelectorAll('[data-obsmode]').forEach(x=>x.classList.toggle('active',x===b));
+  showObserved();
+});
+document.querySelectorAll('[data-ptype]').forEach(b=>b.onclick=()=>{ptype=b.dataset.ptype;document.querySelectorAll('[data-ptype]').forEach(x=>x.classList.toggle('active',x===b));showPred()});
+adminToggle.onchange=e=>e.target.checked?adminLayer.addTo(map):map.removeLayer(adminLayer);
+pointsToggle.onchange=e=>{if(e.target.checked){if(tab==='observed')showObserved();else{points=L.geoJSON(observedGeo,{pointToLayer:(f,ll)=>L.circleMarker(ll,{radius:3,color:'#173f35',fillColor:'#fff',fillOpacity:1,weight:1})}).addTo(map)}}else if(points){map.removeLayer(points);points=null}};
+opacity.oninput=e=>{opacityText.textContent=Math.round(+e.target.value*100)+'%';if(raster)raster.setOpacity(+e.target.value);if(advancedLayer)advancedLayer.setOpacity(+e.target.value)};
+rebuild();showObserved();
+</script>
+<script>
+/* ===== Hue-SmartSoil Decision Support v10 ===== */
+let dsMode='overall';
+
+const DS_Q={
+  Navail25:3.14776, Navail50:5.25, Navail75:7.60,
+  Pavail25:6.50, Pavail50:7.50,
+  Kavail25:6.825, Kavail50:7.85,
+  OM25:2.590577, OM50:2.918128,
+  CEC25:5.465, CEC50:7.50,
+  Urea50:150
+};
+const SD_LIMITS={
+  pH:{median:0.0256,p95:0.0781},
+  K:{median:0.3505,p95:1.0768},
+  P:{median:0.2346,p95:0.4143}
+};
+
+function dsVal(v,d=2){return v===null||v===undefined||!Number.isFinite(Number(v))?'—':Number(v).toFixed(d)}
+function dsClass(level){return level==='high'?'high':level==='medium'?'med':level==='low'?'low':'infox'}
+function dsColor(level){return level==='high'?'#c95e4b':level==='medium'?'#d7a832':level==='low'?'#4a9b78':'#5f83ad'}
+function dsLabel(level){return level==='high'?'Cao':level==='medium'?'Trung bình':level==='low'?'Thấp':'Xác minh'}
+
+function fieldRules(p){
+  const cards=[];
+  const ph=Number(p.pH), n=Number(p.N_avail), pp=Number(p.P), k=Number(p.K),
+        om=Number(p.SOM), cec=Number(p.CEC), urea=Number(p.urea_kg_ha),
+        lime=Number(p.lime_kg_ha), hand=Number(p.hand_m);
+
+  // Acidity: thresholds supported by national rice extension guidance, but no Hue-specific dose is imposed.
+  if(Number.isFinite(ph)){
+    if(ph<4.0){
+      cards.push({topic:'Độ chua',level:'high',action:'Ưu tiên khử chua / xem xét bón vôi',
+        why:`pH KCl ${ph.toFixed(2)} < 4,0. Đất rất chua; nên xác nhận lại tại ruộng và xây dựng liều vôi phù hợp loại đất Huế.`});
+    }else if(ph<5.0){
+      cards.push({topic:'Độ chua',level:'medium',action:'Xem xét cải thiện độ chua',
+        why:`pH KCl ${ph.toFixed(2)} nằm trong khoảng 4,0–5,0. Theo hướng dẫn lúa quốc gia, đây là khoảng có thể cần xử lý vôi; không áp dụng máy móc liều của vùng khác.`});
+    }else if(ph<5.5){
+      cards.push({topic:'Độ chua',level:'low',action:'Theo dõi pH; chưa ưu tiên bón vôi mạnh',
+        why:`pH ${ph.toFixed(2)} hơi chua nhưng gần vùng thuận lợi cho lúa và hiệu quả sử dụng lân.`});
+    }else{
+      cards.push({topic:'Độ chua',level:'low',action:'Không ưu tiên khử chua',
+        why:`pH ${ph.toFixed(2)} không cho thấy nhu cầu khử chua cấp thiết.`});
+    }
+  }
+
+  // N: relative screening because available-N analytical thresholds are method/locality dependent.
+  if(Number.isFinite(n)){
+    if(n<=DS_Q.Navail25){
+      if(Number.isFinite(urea) && urea>DS_Q.Urea50){
+        cards.push({topic:'Đạm (N)',level:'high',action:'Tối ưu hiệu quả N trước khi tăng lượng đạm',
+          why:`N dễ tiêu ${n.toFixed(2)} mg/100 g thuộc nhóm thấp tương đối, nhưng urê báo cáo ${urea.toFixed(0)} kg/ha cao hơn trung vị điều tra. Ưu tiên kiểm tra thời điểm bón, chia lần bón, quản lý nước và bảng so màu lá.`});
+      }else{
+        cards.push({topic:'Đạm (N)',level:'medium',action:'Xem xét bổ sung/điều chỉnh N có kiểm soát',
+          why:`N dễ tiêu ${n.toFixed(2)} mg/100 g thuộc 25% thấp nhất của 80 field. Xác nhận tình trạng cây, năng suất mục tiêu và lượng N hiện dùng trước khi tăng urê.`});
+      }
+    }else if(n>=DS_Q.Navail75){
+      cards.push({topic:'Đạm (N)',level:'low',action:'Không tự động tăng đạm',
+        why:`N dễ tiêu ${n.toFixed(2)} mg/100 g thuộc nhóm cao tương đối. Bón thêm N chỉ nên dựa trên nhu cầu cây và theo dõi màu lá.`});
+    }else{
+      cards.push({topic:'Đạm (N)',level:'low',action:'Duy trì N cân đối và chia lần bón',
+        why:`N dễ tiêu ${n.toFixed(2)} mg/100 g nằm trong khoảng giữa của bộ dữ liệu.`});
+    }
+  }
+
+  if(Number.isFinite(pp)){
+    if(pp<=DS_Q.Pavail25){
+      const acidNote=Number.isFinite(ph)&&ph<4.5?' pH thấp có thể làm giảm hiệu quả sử dụng P, nên xử lý độ chua song song.':'';
+      cards.push({topic:'Lân (P)',level:'medium',action:'Xem xét tăng hiệu quả/bổ sung P',
+        why:`P dễ tiêu ${pp.toFixed(2)} mg/100 g thuộc nhóm thấp tương đối.${acidNote}`});
+    }else{
+      cards.push({topic:'Lân (P)',level:'low',action:'Chưa ưu tiên tăng P chỉ dựa trên phép đo này',
+        why:`P dễ tiêu ${pp.toFixed(2)} mg/100 g không thuộc 25% thấp nhất của bộ dữ liệu.`});
+    }
+  }
+
+  if(Number.isFinite(k)){
+    if(k<=DS_Q.Kavail25){
+      const split=(Number.isFinite(cec)&&cec<=DS_Q.CEC25)||(Number.isFinite(om)&&om<=DS_Q.OM25);
+      cards.push({topic:'Kali (K)',level:'medium',action:split?'Xem xét bổ sung K và chia lần bón':'Xem xét bổ sung/điều chỉnh K',
+        why:`K dễ tiêu ${k.toFixed(2)} mg/100 g thuộc nhóm thấp tương đối.${split?' CEC/OM thấp làm tăng lý do nên tránh bón dồn một lần.':''}`});
+    }else{
+      cards.push({topic:'Kali (K)',level:'low',action:'Không ưu tiên tăng K',
+        why:`K dễ tiêu ${k.toFixed(2)} mg/100 g không thuộc nhóm thấp nhất hiện tại.`});
+    }
+  }
+
+  if(Number.isFinite(om)){
+    if(om<=DS_Q.OM25){
+      cards.push({topic:'Chất hữu cơ',level:'medium',action:'Tăng nguồn hữu cơ và hoàn trả tàn dư hợp lý',
+        why:`OM ${om.toFixed(2)}% thuộc 25% thấp nhất của 80 field. Có thể ưu tiên phân hữu cơ, quản lý rơm rạ/cây phân xanh phù hợp.`});
+    }else{
+      cards.push({topic:'Chất hữu cơ',level:'low',action:'Duy trì nguồn hữu cơ',
+        why:`OM ${om.toFixed(2)}% không thuộc nhóm thấp nhất của bộ dữ liệu.`});
+    }
+  }
+
+  if(Number.isFinite(cec)&&cec<=DS_Q.CEC25){
+    cards.push({topic:'CEC',level:'medium',action:'Ưu tiên hữu cơ và chia nhỏ lần bón',
+      why:`CEC ${cec.toFixed(2)} cmol(+)/kg thuộc nhóm thấp tương đối; khả năng giữ cation/dinh dưỡng có thể hạn chế.`});
+  }
+
+  if(Number.isFinite(hand)&&hand<0.5){
+    cards.push({topic:'Nước/địa hình',level:'medium',action:'Theo dõi úng và điều tiết nước',
+      why:`HAND ${hand.toFixed(2)} m cho thấy vị trí rất thấp so với mạng thoát nước dẫn xuất; nên chú ý thoát nước và không quy mọi triệu chứng cho thiếu phân.`});
+  }
+
+  if(Number.isFinite(lime)&&lime>0 && Number.isFinite(ph)&&ph<5.0){
+    cards.push({topic:'Đối chiếu quản lý',level:'info',action:'Kiểm tra hiệu quả lần bón vôi hiện tại',
+      why:`Phiếu quản lý báo cáo đã dùng khoảng ${lime.toFixed(0)} kg/ha vôi nhưng pH vẫn thấp; cần kiểm tra thời điểm, loại vật liệu, cách bón và pH sau xử lý.`});
+  }
+  return cards;
+}
+
+function filterCards(cards){
+  if(dsMode==='acid') return cards.filter(c=>['Độ chua','Lân (P)'].includes(c.topic));
+  if(dsMode==='nutrient') return cards.filter(c=>['Đạm (N)','Lân (P)','Kali (K)'].includes(c.topic));
+  if(dsMode==='soil') return cards.filter(c=>['Chất hữu cơ','CEC','Nước/địa hình'].includes(c.topic));
+  return cards;
+}
+
+function priorityScore(cards){
+  let s=0;
+  cards.forEach(c=>{if(c.level==='high')s+=3;else if(c.level==='medium')s+=1;});
+  return s;
+}
+function priorityLevel(cards){
+  if(cards.some(c=>c.level==='high')) return 'high';
+  if(cards.some(c=>c.level==='medium')) return 'medium';
+  return 'low';
+}
+
+function renderDecisionCards(cards, observed=true, safety=''){
+  const box=document.getElementById('decisionBox');
+  const deck=document.getElementById('decisionCards');
+  const safe=document.getElementById('decisionSafety');
+  if(!box||!deck||!safe)return;
+  box.style.display='block';
+  const use=filterCards(cards);
+  deck.innerHTML=use.length?use.map(c=>`<div class="ds-card ${dsClass(c.level)}"><b>${c.topic} · ${dsLabel(c.level)} — ${c.action}</b><p>${c.why}</p></div>`).join(''):
+    '<div class="ds-card infox"><b>Chưa có đủ dữ liệu</b><p>Không có quy tắc phù hợp với chế độ đang chọn.</p></div>';
+  safe.innerHTML=safety || (observed
+    ? '<b>Độ tin cậy:</b> các chỉ tiêu đất là phép đo tại field. Khuyến nghị là hỗ trợ quyết định; cần xác nhận tại ruộng trước khi quyết định liều vật tư.'
+    : '<b>Safety gate:</b> đây là khuyến nghị từ pixel dự báo ML, không phải xét nghiệm đất tại vị trí. Không dùng trực tiếp để quyết định liều phân/vôi.');
+}
+
+function fillExtendedObserved(p){
+  const ex=document.getElementById('extendedMeasured');
+  if(!ex)return;
+  ex.style.display='block';
+  document.getElementById('mNavail').textContent=dsVal(p.N_avail);
+  document.getElementById('mNtotal').textContent=dsVal(p.N_total,3);
+  document.getElementById('mPtotal').textContent=dsVal(p.P_total,3);
+  document.getElementById('mKtotal').textContent=dsVal(p.K_total,3);
+  document.getElementById('mBulk').textContent=dsVal(p.bulk_density,2);
+  document.getElementById('mTexture').textContent=
+    `${dsVal(p.sand,1)}% cát · ${dsVal(p.silt,1)}% limon · ${dsVal(p.clay,1)}% sét`;
+  document.getElementById('mUrea').textContent=dsVal(p.urea_kg_ha,0);
+  document.getElementById('mNPK').textContent=dsVal(p.npk_kg_ha,0);
+  document.getElementById('mKCl').textContent=dsVal(p.kcl_kg_ha,0);
+  document.getElementById('mLime').textContent=dsVal(p.lime_kg_ha,0);
+  document.getElementById('mOrganic').textContent=Number(p.organic_used)===1?'Có':Number(p.organic_used)===0?'Không':'—';
+  document.getElementById('mYield').textContent=dsVal(p.mean_yield_t_ha,2);
+}
+
+const _obsInfoV8=obsInfo;
+obsInfo=function(f){
+  _obsInfoV8(f);
+  const p=f.properties;
+  fillExtendedObserved(p);
+  renderDecisionCards(fieldRules(p),true);
+  infoNote.textContent='Các chỉ tiêu đất là kết quả đo tại field năm 2026. Khuyến nghị sử dụng quy tắc sàng lọc và dữ liệu quản lý hiện có; không phải đơn phân bón.';
+};
+
+function hideExtendedForRaster(){
+  const ex=document.getElementById('extendedMeasured'); if(ex)ex.style.display='none';
+  const db=document.getElementById('decisionBox'); if(db)db.style.display='none';
+}
+
+function predCards(v){
+  const p={pH:v.pH,P:v.P,K:v.K,SOM:null,CEC:null,N_avail:null};
+  const cards=fieldRules(p).filter(c=>['Độ chua','Lân (P)','Kali (K)'].includes(c.topic));
+  return cards;
+}
+function predConfidence(v){
+  const sd=v[predProp+'sd'], lim=SD_LIMITS[predProp];
+  if(!Number.isFinite(Number(sd))||!lim)return {level:'Xác minh',text:'Không đọc được SD_pred tại pixel.'};
+  if(sd>lim.p95)return {level:'Thấp',text:`SD_pred ${Number(sd).toFixed(3)} vượt P95 của lớp ${predProp}; nên lấy mẫu trước khi can thiệp.`};
+  if(sd>lim.median)return {level:'Trung bình',text:`SD_pred ${Number(sd).toFixed(3)} nằm giữa median và P95; chỉ dùng để sàng lọc.`};
+  return {level:'Khá',text:`SD_pred ${Number(sd).toFixed(3)} nằm ở nửa thấp của phân bố bất định mô hình.`};
+}
+
+// Extra map click handler: enrich predicted-pixel information after the v8 handler has populated it.
+map.on('click',e=>{
+  if(tab!=='predicted')return;
+  const v=predVals(e.latlng.lat,e.latlng.lng);
+  const cf=predConfidence(v);
+  const ex=document.getElementById('extendedMeasured'); if(ex)ex.style.display='none';
+  renderDecisionCards(predCards(v),false,
+    `<b>Độ tin cậy dự báo: ${cf.level}.</b> ${cf.text} N dễ tiêu chưa có production raster trong build này nên hệ thống không đưa khuyến nghị N ở pixel dự báo.`);
+});
+
+// Generic clicks outside observed fields should not retain an old field recommendation.
+map.on('click',e=>{
+  if(tab==='observed'){
+    const clickPt=map.latLngToContainerPoint(e.latlng);
+    let near=false;
+    observedGeo.features.forEach(f=>{
+      const c=f.geometry.coordinates, fp=map.latLngToContainerPoint([c[1],c[0]]);
+      if(clickPt.distanceTo(fp)<=18)near=true;
+    });
+    if(!near)hideExtendedForRaster();
+  }
+});
+
+function showDecisionSupport(){
+  clearMap();
+  if(points){map.removeLayer(points);points=null;}
+  hideExtendedForRaster();
+  points=L.geoJSON(observedGeo,{
+    pointToLayer:(f,ll)=>{
+      const cards=filterCards(fieldRules(f.properties));
+      const lev=priorityLevel(cards);
+      return L.circleMarker(ll,{radius:9.5,color:'#fff',weight:2.3,fillColor:dsColor(lev),fillOpacity:.96,bubblingMouseEvents:false});
+    },
+    onEachFeature:(f,l)=>{
+      const cards=filterCards(fieldRules(f.properties)), lev=priorityLevel(cards), score=priorityScore(cards);
+      l.bindTooltip(`<b>${f.properties.field_id}</b><br>Ưu tiên: ${dsLabel(lev)} · score ${score}`,{direction:'top',sticky:true});
+      l.on('click',e=>{if(e&&e.originalEvent)L.DomEvent.stopPropagation(e.originalEvent);obsInfo(f);infoTag.textContent='⚙ Hỗ trợ quyết định từ dữ liệu field';});
+    }
+  }).addTo(map);
+  title('Hỗ trợ canh tác · 80 field','Màu điểm thể hiện mức ưu tiên quản lý theo quy tắc sàng lọc; click field để xem khuyến nghị');
+  legendTitle.textContent='Mức ưu tiên quản lý';
+  legendGrad.style.background='linear-gradient(90deg,#4a9b78,#d7a832,#c95e4b)';
+  legendMin.textContent='Thấp';legendMax.textContent='Cao';
+  legendNote.textContent='Mức ưu tiên không phải liều phân. Tất cả quyết định đầu vào cần xác nhận tại ruộng.';
+  opacityUI(false);
+  pointsToggle.checked=true;
+}
+
+document.querySelectorAll('[data-dsmode]').forEach(b=>b.onclick=()=>{
+  dsMode=b.dataset.dsmode;
+  document.querySelectorAll('[data-dsmode]').forEach(x=>x.classList.toggle('active',x===b));
+  if(tab==='decision')showDecisionSupport();
+});
+
+/* source note:
+   - Trung tâm Khuyến nông Quốc gia: Quy trình/kỹ thuật canh tác lúa chất lượng cao và phát thải thấp.
+   - pH KCl 4.0–5.0: có thể cần xử lý vôi; <4.0: chua mạnh.
+   - Lượng vật tư của các quy trình vùng khác KHÔNG được tự động chuyển thành liều khuyến nghị cho Huế.
+   - N management: ưu tiên bón cân đối, chia theo giai đoạn và dùng bảng so màu lá.
+*/
+</script>
+
+<script>window.HSS_CHAT_API_URL="https://YOUR-WORKER.YOUR-SUBDOMAIN.workers.dev/api/chat";</script><button id="hss-chat-launch" type="button" aria-label="Mở chatbot">✦ Hỏi SmartSoil</button><section id="hss-chat" role="dialog" aria-label="Hue-SmartSoil Chatbot"><div id="hss-chat-header"><span>🌱 SmartSoil Assistant · AI</span><button id="hss-chat-close" type="button" aria-label="Đóng">×</button></div><div id="hss-chat-messages" aria-live="polite"></div><div class="hss-chat-suggest"><button data-q="Giải thích các chế độ bản đồ">Chế độ bản đồ</button><button data-q="SD_pred là gì?">SD_pred</button><button data-q="Tôi xem số liệu tại một field thế nào?">Xem field</button></div><form id="hss-chat-form"><input id="hss-chat-input" autocomplete="off" placeholder="Nhập câu hỏi về đất và bản đồ..." aria-label="Câu hỏi"><button type="submit">Gửi</button></form><div id="hss-chat-foot">Không thay thế xét nghiệm đất hoặc tư vấn nông học tại ruộng.</div></section><script id="hss-chat-script">(()=>{'use strict';
+const isAI=true;const launch=document.getElementById('hss-chat-launch'),panel=document.getElementById('hss-chat'),messages=document.getElementById('hss-chat-messages'),input=document.getElementById('hss-chat-input');
+const history=[];const add=(who,txt)=>{const el=document.createElement('div');el.className='hss-msg '+who;el.textContent=txt;messages.appendChild(el);messages.scrollTop=messages.scrollHeight;};
+const fmt=v=>v===null||v===undefined||v===''||v==='—'?'không có dữ liệu':String(v);
+function context(){const title=document.getElementById('infoTitle')?.textContent?.trim()||'';const info=document.getElementById('info');const selected=!!info?.classList.contains('show');const fields=[['pH','mPH'],['K dễ tiêu (mg/100 g)','mK'],['P dễ tiêu (mg/100 g)','mP'],['SOM/OM (%)','mSOM'],['CEC (cmol(+)/kg)','mCEC'],['N dễ tiêu (mg/100 g)','mNavail'],['N tổng số (%)','mNtotal'],['Độ cao (m)','mElev'],['Độ dốc','mSlope'],['TWI','mTWI']];const values={};if(selected){for(const [name,id] of fields){const el=document.getElementById(id);if(el&&el.textContent.trim()&&el.textContent.trim()!=='—'&&(!el.closest('#extendedMeasured')||getComputedStyle(el.closest('#extendedMeasured')).display!=='none'))values[name]=el.textContent.trim();}}const active=document.querySelector('.tab.active');return {mode:active?.textContent?.trim()||'không xác định',selected,title:selected?title:null,values,source:selected?(document.getElementById('infoTag')?.textContent?.trim()||'không rõ'):'chưa chọn',note:selected?(document.getElementById('infoNote')?.textContent?.trim()||''):''};}
+function offline(q,c){const t=q.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');if(/(dang chon|diem nay|field nay|mau nay|so lieu|gia tri|ph bao nhieu|thong tin mau)/.test(t)){if(!c.selected)return 'Bạn chưa chọn field/pixel. Hãy nhấp vào một điểm lấy mẫu trên bản đồ, sau đó hỏi lại. Tôi không tự suy đoán số liệu.';return 'Đang xem: '+c.title+'\nNguồn: '+c.source+'\n'+Object.entries(c.values).map(([k,v])=>k+': '+fmt(v)).join('\n')+'\nLưu ý: giá trị dự đoán không phải quan trắc thực địa.';}
+if(/(sd_pred|bat dinh|do tin cay|sai so)/.test(t))return 'SD_pred thể hiện độ dao động của dự đoán giữa các lần/fold mô hình, KHÔNG phải khoảng dự đoán 95% đã hiệu chuẩn. Khu vực thiếu mẫu hoặc ngoại suy cần kiểm chứng tại ruộng.';
+if(/(2027|kich ban|du phong|forecast)/.test(t))return 'Các lớp 2027 là kịch bản dự phóng thử nghiệm; chưa có quan trắc 2027 để kiểm định. Không diễn giải là dự báo chắc chắn.';
+if(/(bien dong|2025|2026|thay doi)/.test(t))return 'Tab Biến động 2025→2026 biểu diễn chênh lệch Δ = giá trị năm 2026 trừ năm 2025 tại các vị trí lặp lại. Bề mặt biến động là nội suy mô tả, không phải dự đoán ML.';
+if(/(che do|tab|ban do|su dung|huong dan|xem field|click|diem lay mau)/.test(t))return 'Chọn ● Đo thực địa để xem dữ liệu đo tại 80 field; ▦ Dự đoán 100 m để xem raster ML; ↕ Biến động 2025→2026 để xem Δ; ◌ Kịch bản 2027 để xem dự phóng; ⚙ Hỗ trợ canh tác để xem ưu tiên quản lý. Nhấp điểm mẫu để xem thông tin chi tiết.';
+if(/(phan bon|bon voi|lieu luong|khuyen nghi|canh tac|dss)/.test(t))return 'Hỗ trợ canh tác chỉ sàng lọc mức ưu tiên từ số liệu sẵn có. Không tự đưa ra liều phân bón/vôi bắt buộc; cần kiểm tra thực địa và tư vấn nông học trước khi quyết định.';
+if(/(ph|do chua|cec|som|om|nito|kali|photpho|texture)/.test(t))return 'pH biểu thị độ chua; SOM/OM là chất hữu cơ; CEC là khả năng trao đổi cation; N/P/K là các chỉ tiêu dinh dưỡng. Để xem số liệu cụ thể, hãy nhấp một field rồi hỏi “số liệu điểm này”. Không suy ra nhu cầu bón phân chỉ từ một chỉ tiêu.';
+return 'Tôi hỗ trợ giải thích các tab, số liệu field đang chọn, SD_pred, kịch bản 2027 và giới hạn của hỗ trợ canh tác. Bản offline sử dụng quy tắc, không phải mô hình ngôn ngữ. Bạn có thể chọn một gợi ý bên dưới.';}
+async function ask(q){add('user',q);const c=context();if(!isAI || !window.HSS_CHAT_API_URL || window.HSS_CHAT_API_URL.includes('YOUR-WORKER')){add('bot',offline(q,c));return;}add('bot','Đang xử lý...');const pending=messages.lastElementChild;try{const r=await fetch(window.HSS_CHAT_API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({message:q,context:c,history:history.slice(-8)})});const data=await r.json();if(!r.ok)throw new Error(data.error||'HTTP '+r.status);pending.textContent=data.reply||'Không có phản hồi.';history.push({role:'user',content:q},{role:'assistant',content:pending.textContent});}catch(e){pending.textContent='Dịch vụ AI hiện không khả dụng. Trả lời offline: '+offline(q,c);}}
+launch.addEventListener('click',()=>{panel.classList.toggle('open');if(panel.classList.contains('open'))input.focus();});document.getElementById('hss-chat-close').addEventListener('click',()=>panel.classList.remove('open'));document.getElementById('hss-chat-form').addEventListener('submit',e=>{e.preventDefault();const q=input.value.trim();if(!q)return;input.value='';ask(q);});document.querySelectorAll('.hss-chat-suggest button').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.q)));add('bot',isAI?'Xin chào! Tôi có thể giải thích bản đồ và thông tin field đang chọn. AI chạy trên Cloudflare Workers, không cần đăng nhập ChatGPT. Nếu chưa cấu hình dịch vụ, hệ thống trả lời offline.':'Xin chào! Tôi là trợ lý offline của Hue-SmartSoil. Hãy chọn một field trên bản đồ hoặc hỏi về các lớp dữ liệu.');
+})();</script></body></html>
