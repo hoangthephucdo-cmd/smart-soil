@@ -1,0 +1,1 @@
+window.HSS_layers=window.HSS_layers||{};window.HSS_layers["Elevation"]={"datauri":"assets/map_layer_12.png","title":"Độ cao địa hình","unit":"m","cmap":"terrain","group":"Địa hình","note":"Từ Copernicus DEM GLO-30.","vmin":0.0,"vmax":924.3214294433608};

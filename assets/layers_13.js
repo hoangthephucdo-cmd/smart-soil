@@ -1,0 +1,1 @@
+window.HSS_layers=window.HSS_layers||{};window.HSS_layers["Slope"]={"datauri":"assets/map_layer_13.png","title":"Độ dốc địa hình","unit":"độ","cmap":"YlOrBr","group":"Địa hình","note":"Độ dốc Horn dẫn xuất từ DEM.","vmin":0.0,"vmax":34.26740776062013};

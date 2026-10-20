@@ -1,0 +1,1 @@
+window.HSS_layers=window.HSS_layers||{};window.HSS_layers["pH_support"]={"datauri":"assets/map_layer_16.png","title":"Miền hỗ trợ mô hình pH","unit":"lớp","cmap":"support","group":"Miền hỗ trợ","note":"1 = cao, 2 = trung bình, 3 = ngoại suy.","vmin":1,"vmax":3};

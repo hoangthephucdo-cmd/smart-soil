@@ -1,0 +1,1 @@
+window.HSS_layers=window.HSS_layers||{};window.HSS_layers["Distance"]={"datauri":"assets/map_layer_15.png","title":"Khoảng cách tới điểm lấy mẫu gần nhất","unit":"km","cmap":"Reds","group":"Độ phủ dữ liệu","note":"Chỉ báo mức độ phủ mẫu trong không gian.","vmin":0.3170672285556793,"vmax":20.850008125305187};

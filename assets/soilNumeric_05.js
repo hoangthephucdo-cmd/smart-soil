@@ -1,0 +1,1 @@
+window.HSS_soilNumeric["grid"]={"xmin":725500.0,"ymax":1846500.0,"res":100,"width":733,"height":571};

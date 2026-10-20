@@ -1,0 +1,1 @@
+window.HSS_layers=window.HSS_layers||{};window.HSS_layers["K_support"]={"datauri":"assets/map_layer_17.png","title":"Miền hỗ trợ mô hình K","unit":"lớp","cmap":"support","group":"Miền hỗ trợ","note":"Miền áp dụng riêng cho K.","vmin":1,"vmax":3};

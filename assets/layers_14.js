@@ -1,0 +1,1 @@
+window.HSS_layers=window.HSS_layers||{};window.HSS_layers["TWI"]={"datauri":"assets/map_layer_14.png","title":"Chỉ số ẩm địa hình (TWI)","unit":"TWI","cmap":"Blues","group":"Địa hình","note":"Chỉ báo tương đối về khả năng tích tụ nước theo địa hình.","vmin":4.657738542556762,"vmax":13.394227809906008};
